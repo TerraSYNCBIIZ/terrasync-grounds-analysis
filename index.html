@@ -37,7 +37,7 @@ a{color:inherit;}
 <body>
 <div class="wrap">
 <h1>Velocity robotic mower lineup — value analysis</h1>
-<p class="sub">26 models across Kress, Husqvarna, and NEXMOW, with their Velocity product images. Daily coverage = 12-hour mowing cycle (the fleet optimizer&rsquo;s planning basis); drop-and-go models are rated on their documented route. Cost is amortized over a 5-year life and a 32-week season. Generated 2026-07-03 from Velocity production <code>mowerCatalog.ts</code> @ <code>b642edd3</code>.</p>
+<p class="sub">26 models across Kress, Husqvarna, and NEXMOW, with their Velocity product images. Daily coverage = 12-hour mowing cycle; commercial EPOS &amp; CEORA on Husqvarna&rsquo;s 24-hour basis; drop-and-go on their documented route. Cost is amortized over a 5-year life and a 32-week season. Generated 2026-07-03 from Velocity production <code>mowerCatalog.ts</code> @ <code>b642edd3</code>.</p>
 
 <h2 class="sr-only">Interactive analysis of 26 Velocity mower models comparing price, daily coverage, throughput, amortized cost per acre per day, and value per dollar, with product images.</h2>
 
@@ -46,21 +46,23 @@ a{color:inherit;}
   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px;">
     <div style="background:var(--surface-1); border:0.5px solid var(--border); border-radius:12px; padding:1rem;">
       <div style="display:flex; align-items:center; gap:8px; color:#2a78d6; margin-bottom:6px;"><i class="ti ti-rosette" style="font-size:20px;" aria-hidden="true"></i><span style="font-size:12px; color:var(--text-muted);">Cheapest to run</span></div>
-      <div style="font-size:18px; font-weight:500;">Husqvarna 440 iQ</div>
-      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">$3.21 per acre per day amortized (5 yr), and best value per dollar (1008). 450 X/H EPOS ($4.21) is next.</div>
+      <div style="font-size:18px; font-weight:500;">Husqvarna 520 EPOS</div>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;"></div>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">.36 per acre per day amortized (5 yr, 24-h EPOS basis). 440 iQ (</div>.21) is next; best value per dollar is the 440 iQ (1008).</div>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">.36 per acre per day amortized (5 yr, 24-h EPOS basis). 440 iQ (</div>.21) is next; best value per dollar is the 440 iQ (1008).</div>
     </div>
     <div style="background:var(--surface-1); border:0.5px solid var(--border); border-radius:12px; padding:1rem;">
       <div style="display:flex; align-items:center; gap:8px; color:#d83a3a; margin-bottom:6px;"><i class="ti ti-bolt" style="font-size:20px;" aria-hidden="true"></i><span style="font-size:12px; color:var(--text-muted);">Highest output (Drop-and-Go)</span></div>
       <div style="font-size:18px; font-weight:500;">Kress Voyager</div>
-      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">~0.33 ac in one ~7-hr route at 1,198 sq ft/hr — mows straight, no charging. A different class than leave-behind.</div>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">~7 ac in one ~7-hr route at 43,560 sq ft/hr — mows straight, no charging. A different class than leave-behind.</div>
     </div>
     <div style="background:var(--surface-1); border:0.5px solid var(--border); border-radius:12px; padding:1rem;">
       <div style="display:flex; align-items:center; gap:8px; color:#d83a3a; margin-bottom:6px;"><i class="ti ti-trophy" style="font-size:20px;" aria-hidden="true"></i><span style="font-size:12px; color:var(--text-muted);">Most acreage, autonomous</span></div>
-      <div style="font-size:18px; font-weight:500;">Kress KR 238</div>
-      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">0.33 ac/day fully autonomous (24/7, no operator), fairway, $9.47/ac·day — fewest machines for a big site.</div>
+      <div style="font-size:18px; font-weight:500;">Husqvarna CEORA</div>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">7.2 ac/day fully autonomous (24/7, no operator), fairway, $4.56/ac·day — fewest machines for a big site.</div>
     </div>
   </div>
-  <p style="font-size:12px; color:var(--text-secondary); margin:4px 0 0; line-height:1.5;"><span style="color:var(--text-muted);">Cost =</span> amortized $/acre/day (price &divide; [5 yr &times; 32-wk season &times; 7 days &times; daily acres]) &middot; Voyager rated on its ~7-hr drop-and-go route (0.33 ac, no charging) &middot; prices = Velocity catalog MSRP. <span style="color:var(--text-muted);">Spread: 25&times; price, 56&times; capacity.</span></p>
+  <p style="font-size:12px; color:var(--text-secondary); margin:4px 0 0; line-height:1.5;"><span style="color:var(--text-muted);">Cost =</span> amortized $/acre/day (price &divide; [5 yr &times; 32-wk season &times; 7 days &times; daily acres]) &middot; commercial EPOS &amp; CEORA on the 24-h basis (2&times; cycle rating, hourly throughput unscaled) &middot; Voyager on its ~7-hr drop-and-go route &middot; prices = Velocity catalog MSRP. <span style="color:var(--text-muted);">Spread: 25&times; price, 58&times; capacity.</span></p>
 </div>
 
 <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin:1.5rem 0 8px;">
@@ -106,14 +108,14 @@ const D=[
 {n:"440 iQ",b:"Husqvarna",l:"Residential iQ",w:9.4,ac:1,s:3630,sl:"40% mod",mb:3599.99,m:3599.99,st:false,f:false,v:1008,c:3.21},
 {n:"435 iQ AWD",b:"Husqvarna",l:"Residential AWD",w:8.7,ac:0.65,s:2360,sl:"70% steep",mb:4999.99,m:4999.99,st:false,f:false,v:472,c:6.87},
 {n:"450 X/H EPOS",b:"Husqvarna",l:"Prosumer EPOS",w:9.45,ac:1.25,s:4538,sl:"40% mod",mb:5899.99,m:5899.99,st:false,f:false,v:769,c:4.21},
-{n:"520 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:9.45,ac:0.625,s:2269,sl:"40% mod",mb:3299.99,m:3299.99,st:false,f:false,v:688,c:4.71},
-{n:"535 AWD EPOS",b:"Husqvarna",l:"Commercial AWD",w:8.7,ac:0.65,s:2360,sl:"70% steep",mb:4999.99,m:4999.99,st:false,f:false,v:472,c:6.87},
-{n:"550 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:9.45,ac:0.625,s:2269,sl:"40% mod",mb:5299,m:5299,st:false,f:false,v:428,c:7.57},
-{n:"550H EPOS",b:"Husqvarna",l:"Commercial EPOS",w:9.45,ac:0.625,s:2269,sl:"40% mod",mb:4999.99,m:4999.99,st:false,f:false,v:454,c:7.14},
-{n:"560 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:10.2,ac:0.75,s:2723,sl:"40% mod",mb:5999,m:5999,st:false,f:false,v:454,c:7.14},
-{n:"580 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:10.2,ac:1,s:3630,sl:"40% mod",mb:8599,m:8599,st:false,f:false,v:422,c:7.68},
-{n:"580L EPOS",b:"Husqvarna",l:"Commercial EPOS",w:10.2,ac:1,s:3630,sl:"40% mod",mb:7399,m:7399,st:false,f:true,v:491,c:6.61},
-{n:"CEORA",b:"Husqvarna",l:"Large-area golf",w:18.1,ac:3.6,s:13068,sl:"26.8% flat",mb:36799,m:36799,st:false,f:true,v:355,c:9.13},
+{n:"520 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:9.45,ac:1.25,s:2269,sl:"40% mod",mb:3299.99,m:3299.99,st:false,f:false,v:688,c:2.36},
+{n:"535 AWD EPOS",b:"Husqvarna",l:"Commercial AWD",w:8.7,ac:1.3,s:2360,sl:"70% steep",mb:4999.99,m:4999.99,st:false,f:false,v:472,c:3.43},
+{n:"550 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:9.45,ac:1.25,s:2269,sl:"40% mod",mb:5299,m:5299,st:false,f:false,v:428,c:3.79},
+{n:"550H EPOS",b:"Husqvarna",l:"Commercial EPOS",w:9.45,ac:1.25,s:2269,sl:"40% mod",mb:4999.99,m:4999.99,st:false,f:false,v:454,c:3.57},
+{n:"560 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:10.2,ac:1.5,s:2723,sl:"40% mod",mb:5999,m:5999,st:false,f:false,v:454,c:3.57},
+{n:"580 EPOS",b:"Husqvarna",l:"Commercial EPOS",w:10.2,ac:2,s:3630,sl:"40% mod",mb:8599,m:8599,st:false,f:false,v:422,c:3.84},
+{n:"580L EPOS",b:"Husqvarna",l:"Commercial EPOS",w:10.2,ac:2,s:3630,sl:"40% mod",mb:7399,m:7399,st:false,f:true,v:491,c:3.3},
+{n:"CEORA",b:"Husqvarna",l:"Large-area golf",w:18.1,ac:7.2,s:13068,sl:"26.8% flat",mb:36799,m:36799,st:false,f:true,v:355,c:4.56},
 {n:"NEXMOW M2*",b:"NEXMOW",l:"Drop-and-Go",w:13.8,ac:0.9,s:3267,sl:"45% mod",mb:9799,m:9799,st:false,f:true,v:333,c:9.72}
 ];
 const BC={Kress:"#d83a3a",Husqvarna:"#2a78d6",NEXMOW:"#d6920a"};

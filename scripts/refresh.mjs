@@ -9,8 +9,9 @@
  *
  * Run:  node scripts/refresh.mjs        (then commit + push → Pages rebuilds)
  *
- * Every replacement is anchored and THROWS if the anchor is missing, so a
- * drifted template fails loudly instead of shipping half-updated numbers.
+ * Replacements are anchored on page STRUCTURE (card labels, the D array),
+ * not on current copy — so the script is safely re-runnable. Missing
+ * structural anchors throw instead of shipping half-updated numbers.
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -27,9 +28,9 @@ const INDEX = resolve(
 const { models, provenance } = JSON.parse(readFileSync(INDEX, "utf8"));
 let html = readFileSync(HTML, "utf8");
 
-function replaceOnce(anchor, from, to) {
-  if (!html.includes(from)) throw new Error(`Anchor not found: ${anchor}`);
-  html = html.replace(from, to);
+function replaceRe(anchor, re, to) {
+  if (!re.test(html)) throw new Error(`Anchor not found: ${anchor}`);
+  html = html.replace(re, to);
 }
 
 /* ── Derived facts ──────────────────────────────────────────────────────── */
@@ -37,10 +38,11 @@ const field = models.filter((m) => m.tier === "field");
 const byC = [...field].sort((a, b) => a.c - b.c);
 const cheapest = byC[0];
 const runnerUp = byC[1];
-const strongest = field.reduce((a, b) => (b.s > a.s ? b : a));
+const strongest = field.reduce((a, b) => (b.s > a.s ? b : a), field[0]);
 const biggest = field
   .filter((m) => m.mode === "leave-behind")
-  .reduce((a, b) => (b.ac > a.ac ? b : a));
+  .reduce((a, b) => (b.acPerDay > a.acPerDay ? b : a));
+const bestOutput = field.reduce((a, b) => (b.sqftHr > a.sqftHr ? b : a));
 const priceSpread = Math.round(
   Math.max(...models.map((m) => m.msrp)) / Math.min(...models.map((m) => m.msrp)),
 );
@@ -57,61 +59,53 @@ const rows = models
       `{n:${JSON.stringify(starName(m))},b:${JSON.stringify(m.brand)},l:${JSON.stringify(m.klass)},w:${m.cutW},ac:${m.acPerDay},s:${m.sqftHr},sl:${JSON.stringify(m.slopeLabel)},mb:${m.msrp},m:${m.msrp},st:false,f:${m.fairway},v:${m.v},c:${m.c}}`,
   )
   .join(",\n");
-{
-  const m = html.match(/const D=\[\n[\s\S]*?\n\];/);
-  if (!m) throw new Error("Anchor not found: const D=[ ... ];");
-  html = html.replace(m[0], `const D=[\n${rows}\n];`);
-}
+replaceRe("const D=[...]", /const D=\[\n[\s\S]*?\n\];/, `const D=[\n${rows}\n];`);
 
 /* ── 2. Subtitle / provenance ───────────────────────────────────────────── */
-replaceOnce(
+replaceRe(
   "subtitle",
-  /<p class="sub">[\s\S]*?<\/p>/.exec(html)?.[0] ?? "«sub»",
-  `<p class="sub">${models.length} models across Kress, Husqvarna, and NEXMOW, with their Velocity product images. Daily coverage = 12-hour mowing cycle (the fleet optimizer&rsquo;s planning basis); drop-and-go models are rated on their documented route. Cost is amortized over a 5-year life and a 32-week season. Generated ${provenance.generatedAt} from Velocity production <code>mowerCatalog.ts</code> @ <code>${provenance.headCommit}</code>.</p>`,
+  /<p class="sub">[\s\S]*?<\/p>/,
+  `<p class="sub">${models.length} models across Kress, Husqvarna, and NEXMOW, with their Velocity product images. Daily coverage = 12-hour mowing cycle; commercial EPOS &amp; CEORA on Husqvarna&rsquo;s 24-hour basis; drop-and-go on their documented route. Cost is amortized over a 5-year life and a 32-week season. Generated ${provenance.generatedAt} from Velocity production <code>mowerCatalog.ts</code> @ <code>${provenance.headCommit}</code>.</p>`,
 );
 
-/* ── 3. The three verdict cards ─────────────────────────────────────────── */
-replaceOnce(
-  "cheapest card title",
-  `<div style="font-size:18px; font-weight:500;">Husqvarna 580 / 580L EPOS</div>`,
-  `<div style="font-size:18px; font-weight:500;">${cheapest.brand} ${cheapest.name}</div>`,
+/* ── 3. The three verdict cards (anchored on their label spans) ─────────── */
+function card(labelPattern, anchor, title, body) {
+  replaceRe(
+    anchor,
+    new RegExp(
+      `(>${labelPattern}</span></div>\\s*<div style="font-size:18px; font-weight:500;">)[^<]*(</div>\\s*<div style="font-size:13px; color:var\\(--text-secondary\\); margin-top:4px;">)[^<]*(</div>)`,
+    ),
+    `$1${title}$2${body}$3`,
+  );
+}
+
+card(
+  "Cheapest to run",
+  "cheapest card",
+  `${cheapest.brand} ${cheapest.name}`,
+  `${usd2(cheapest.c)} per acre per day amortized (5 yr, 24-h EPOS basis). ${runnerUp.name} (${usd2(runnerUp.c)}) is next; best value per dollar is the ${field.reduce((a, b) => (b.v > a.v ? b : a)).name} (${field.reduce((a, b) => (b.v > a.v ? b : a)).v}).`,
 );
-replaceOnce(
-  "cheapest card body",
-  `$3.70 per acre per day amortized (5 yr), and best value per dollar (875). 440 iQ ($3.84) is the residential pick.`,
-  `${usd2(cheapest.c)} per acre per day amortized (5 yr), and best value per dollar (${cheapest.v}). ${runnerUp.name} (${usd2(runnerUp.c)}) is next.`,
+card(
+  "Highest output \\(Drop-and-Go\\)",
+  "output card",
+  `${bestOutput.brand} ${bestOutput.name}`,
+  `~${bestOutput.acPerDay} ac in one ~7-hr route at ${bestOutput.sqftHr.toLocaleString()} sq ft/hr — mows straight, no charging. A different class than leave-behind.`,
 );
-replaceOnce(
-  "output card body",
-  `~7 ac in one ~7-hr route at 43,560 sq ft/hr — mows straight, no charging. A different class than leave-behind.`,
-  `~${strongest.acPerDay} ac in one ~7-hr route at ${strongest.sqftHr.toLocaleString()} sq ft/hr — mows straight, no charging. A different class than leave-behind.`,
-);
-replaceOnce(
-  "acreage card body",
-  `5 ac/day fully autonomous (24/7, no operator), fairway, $7.86/ac·day — fewest machines for a big site.`,
-  `${biggest.acPerDay} ac/day fully autonomous (24/7, no operator), fairway, ${usd2(biggest.c)}/ac·day — fewest machines for a big site.`,
+card(
+  "Most acreage, autonomous",
+  "acreage card",
+  `${biggest.brand} ${biggest.name}`,
+  `${biggest.acPerDay} ac/day fully autonomous (24/7, no operator)${biggest.fairway ? ", fairway" : ""}, ${usd2(biggest.c)}/ac·day — fewest machines for a big site.`,
 );
 
-/* ── 4. Cost footnote + legend ──────────────────────────────────────────── */
-replaceOnce(
+/* ── 4. Cost footnote (structure: the "Cost =" line) ────────────────────── */
+replaceRe(
   "cost footnote",
-  / &middot; Voyager re-based to its ~7-hr drop-and-go route \(7 ac, no charging\) &middot; 550\/550H = \$5,899\.99 \(Husqvarna MSRP\)\. <span style="color:var\(--text-muted\);">Spread: 24&times; price, 56&times; capacity\.<\/span>/.exec(
-    html,
-  )?.[0] ?? "«footnote»",
-  ` &middot; Voyager rated on its ~7-hr drop-and-go route (${strongest.acPerDay} ac, no charging) &middot; prices = Velocity catalog MSRP. <span style="color:var(--text-muted);">Spread: ${priceSpread}&times; price, ${capSpread}&times; capacity.</span>`,
-);
-replaceOnce(
-  "legend",
-  ` <i class="ti ti-antenna" style="font-size:12px;" aria-hidden="true"></i> = commercial EPOS, price all-in incl. $900 site reference station.`,
-  ``,
-);
-replaceOnce(
-  "claimed footnote",
-  `NEXMOW M2* is develop-only.`,
-  `* = manufacturer-claimed specs, not yet field-verified.`,
+  /<span style="color:var\(--text-muted\);">Cost =<\/span>[\s\S]*?<\/p>/,
+  `<span style="color:var(--text-muted);">Cost =</span> amortized $/acre/day (price &divide; [5 yr &times; 32-wk season &times; 7 days &times; daily acres]) &middot; commercial EPOS &amp; CEORA on the 24-h basis (2&times; cycle rating, hourly throughput unscaled) &middot; Voyager on its ~7-hr drop-and-go route &middot; prices = Velocity catalog MSRP. <span style="color:var(--text-muted);">Spread: ${priceSpread}&times; price, ${capSpread}&times; capacity.</span></p>`,
 );
 
 writeFileSync(HTML, html);
 console.log(
-  `index.html refreshed — ${models.length} models @ Velocity ${provenance.headCommit} (${provenance.generatedAt}). Cheapest: ${cheapest.name} ${usd2(cheapest.c)} · value ${cheapest.v}.`,
+  `index.html refreshed — ${models.length} models @ Velocity ${provenance.headCommit} (${provenance.generatedAt}). Cheapest: ${cheapest.name} ${usd2(cheapest.c)} · most acreage: ${biggest.name} ${biggest.acPerDay} ac.`,
 );
